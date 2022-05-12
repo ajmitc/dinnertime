@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -184,6 +185,16 @@ public class DinnerTimeDbAccessor {
         jdbcTemplate.update(sql, args, argTypes);
     }
 
+    public List<LocalDate> getDistinctMealPlanEntryDates(User user, String mealPlanId){
+        List<MealPlanEntry> entries = getMealPlanEntries(user, mealPlanId, null);
+        List<LocalDate> dates = entries.stream()
+                .map(entry -> entry.getDate())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        return dates;
+    }
+
     /**
      * Get the meal plan entries for the given user, meal plan, and date
      * @param user
@@ -204,8 +215,13 @@ public class DinnerTimeDbAccessor {
      * @return 
      */
     public List<MealPlanEntry> getMealPlanEntries(User user, String mealPlanId, LocalDate fromDate, LocalDate toDate){
+        String query = "select * from mealplanentry where mealplan_id=?";
+        if (fromDate != null)
+            query += " and mpdate >= ?";
+        if (toDate != null)
+            query += " and mpdate <= ?";
         List<MealPlanEntry> mealPlanEntries = 
-            jdbcTemplate.query("select * from mealplanentry where mealplan_id=? and mpdate >= ? and mpdate <= ?", new RowMapper<MealPlanEntry>(){
+            jdbcTemplate.query(query, new RowMapper<MealPlanEntry>(){
                 @Override
                 public MealPlanEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
                     MealPlanEntry entry = new MealPlanEntry();

@@ -7,12 +7,16 @@ import java.time.LocalDate;
  * @author aaron.mitchell
  */
 public class MealPlanEntry {
+    public static final String TYPE_TEXT   = "text";
+    public static final String TYPE_URL    = "url";
+    public static final String TYPE_RECIPE = "drive_id";
+
     private String id;
     private String mealPlanId;
     private String type; // plain text, url, recipe id
     private String content; // text, url, recipe ID
     private String notes;
-    private String category; // Breakfast, Lunch, Dinner, Snack
+    private String category = "default"; // Breakfast, Lunch, Dinner, Snack
     private LocalDate date;
 
     public MealPlanEntry(){
